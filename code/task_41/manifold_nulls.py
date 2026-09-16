@@ -27,8 +27,12 @@ sys.path.insert(0, '.')
 from tana_geometry import (community_jacobian, whitening_weights,
                            propagator_distance, hopkins, silhouette_profile)
 
-DATA = os.environ.get("TANA_DATA", "data")
-OUT = os.environ.get("TANA_OUT", "results")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+_default_data = os.path.join(REPO_DIR, "data", "task_41") if os.path.isdir(
+    os.path.join(REPO_DIR, "data", "task_41")) else "data"
+_default_out = _default_data  # write alongside input data
+
 PKILL, NU, L, WINDOW, NDRAW, SEED = 0.2, 5e-6, 20, (1, 3), 40, 20260912
 
 GRID = [("baseline_std_tnm","R02_baseline",100,.10,.010),("C_50","R01_C50",50,.10,.010),
@@ -59,33 +63,39 @@ def surrogate(J, rng, kind):
     Js = np.zeros_like(J); v = J[off].copy(); rng.shuffle(v); Js[off] = v
     return Js
 
-out = {}
-for tag, fid, C, mu, pmut in GRID:
-    p = f"{DATA}/{fid}_tstar.json"
-    if not os.path.exists(p): continue
-    d = json.load(open(p))
-    J = np.array(d["J_sub"], float)
-    n = np.array([s["pop"] for s in d["species"]], float)
-    sa = np.array([s["id"] for s in d["species"]], int)
-    if len(n) < 10: continue
-    H, s = geom(J, n, sa, mu, pmut)
-    row = {"hopkins": H, "silhouette_max": s, "S": int(len(n)), "nulls": {}}
-    rng = np.random.default_rng(SEED)
-    for kind in ("label", "shuffle", "none"):
-        hs, ss = [], []
-        reps = 1 if kind == "none" else NDRAW
-        for _ in range(reps):
-            h2, s2 = geom(surrogate(J, rng, kind), n, sa, mu, pmut)
-            hs.append(h2); ss.append(s2)
-        row["nulls"][kind] = {
-            "hopkins_mean": float(np.nanmean(hs)), "hopkins_sd": float(np.nanstd(hs)),
-            "silhouette_mean": float(np.mean(ss)), "silhouette_sd": float(np.std(ss)),
-            "hopkins_z": float((H - np.nanmean(hs)) / np.nanstd(hs)) if reps > 1 and np.nanstd(hs) > 0 else None,
-            "silhouette_z": float((s - np.mean(ss)) / np.std(ss)) if reps > 1 and np.std(ss) > 0 else None}
-    out[tag] = row
-    lz = row["nulls"]["label"]
-    print(f"{tag:18s} S={len(n):3d}  H={H:.3f} (label null {lz['hopkins_mean']:.3f}+-{lz['hopkins_sd']:.3f}, "
-          f"z={lz['hopkins_z']:+.2f})   s_max={s:.3f} (null {lz['silhouette_mean']:.3f}, z={lz['silhouette_z']:+.2f})")
+if __name__ == "__main__":
+    DATA = os.environ.get("TANA_DATA", _default_data)
+    OUT = os.environ.get("TANA_OUT", _default_out)
+    os.makedirs(OUT, exist_ok=True)
 
-json.dump(out, open(f"{OUT}/manifold_nulls.json", "w"), indent=2, default=float)
-print(f"\nwrote {OUT}/manifold_nulls.json")
+    out = {}
+    for tag, fid, C, mu, pmut in GRID:
+        p = f"{DATA}/{fid}_tstar.json"
+        if not os.path.exists(p): continue
+        d = json.load(open(p))
+        J = np.array(d["J_sub"], float)
+        n = np.array([s["pop"] for s in d["species"]], float)
+        sa = np.array([s["id"] for s in d["species"]], int)
+        if len(n) < 10: continue
+        H, s = geom(J, n, sa, mu, pmut)
+        row = {"hopkins": H, "silhouette_max": s, "S": int(len(n)), "nulls": {}}
+        rng = np.random.default_rng(SEED)
+        for kind in ("label", "shuffle", "none"):
+            hs, ss = [], []
+            reps = 1 if kind == "none" else NDRAW
+            for _ in range(reps):
+                h2, s2 = geom(surrogate(J, rng, kind), n, sa, mu, pmut)
+                hs.append(h2); ss.append(s2)
+            row["nulls"][kind] = {
+                "hopkins_mean": float(np.nanmean(hs)), "hopkins_sd": float(np.nanstd(hs)),
+                "silhouette_mean": float(np.mean(ss)), "silhouette_sd": float(np.std(ss)),
+                "hopkins_z": float((H - np.nanmean(hs)) / np.nanstd(hs)) if reps > 1 and np.nanstd(hs) > 0 else None,
+                "silhouette_z": float((s - np.mean(ss)) / np.std(ss)) if reps > 1 and np.std(ss) > 0 else None}
+        out[tag] = row
+        lz = row["nulls"]["label"]
+        print(f"{tag:18s} S={len(n):3d}  H={H:.3f} (label null {lz['hopkins_mean']:.3f}+-{lz['hopkins_sd']:.3f}, "
+              f"z={lz['hopkins_z']:+.2f})   s_max={s:.3f} (null {lz['silhouette_mean']:.3f}, z={lz['silhouette_z']:+.2f})")
+
+    json.dump(out, open(f"{OUT}/manifold_nulls.json", "w"), indent=2, default=float)
+    print(f"\nwrote {OUT}/manifold_nulls.json")
+

@@ -322,9 +322,12 @@ ax_f.grid(True, linestyle=":", alpha=0.6)
 ax_f.legend(loc="upper right", framealpha=0.92)
 
 # Save figures
-out_fig_dir = os.path.join(REPO_DIR, "latex", "task_41", "fig")
-if not os.path.exists(out_fig_dir):
-    out_fig_dir = os.path.join(os.path.dirname(SRC_DIR), "fig")
+_default_fig_dir = os.path.join(REPO_DIR, "latex", "task_41", "fig")
+if not os.path.exists(_default_fig_dir):
+    _default_fig_dir = os.path.join(REPO_DIR, "latex", "images")
+if not os.path.isdir(_default_fig_dir):
+    _default_fig_dir = os.path.join(os.path.dirname(SRC_DIR), "fig")
+out_fig_dir = os.environ.get("TANA_FIG", _default_fig_dir)
 os.makedirs(out_fig_dir, exist_ok=True)
 png_path = os.path.join(out_fig_dir, "jacobian_timescale_inversion_verification.png")
 pdf_path = os.path.join(out_fig_dir, "jacobian_timescale_inversion_verification.pdf")

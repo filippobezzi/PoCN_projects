@@ -41,7 +41,8 @@ import scipy.linalg as la
 import scipy.spatial.distance as ssd
 import scipy.cluster.hierarchy as sch
 import scipy.stats as st
-from sklearn.metrics import silhouette_score, adjusted_rand_score
+# sklearn is imported lazily inside silhouette_profile() to avoid a hard
+# dependency for scripts that never call that function.
 
 __all__ = [
     "hamming_matrix", "mutation_kernel", "community_jacobian",
@@ -265,6 +266,7 @@ def silhouette_profile(D, ks=range(2, 9)):
     (a near-constant distance matrix collapses Ward to a single cluster), so a
     degenerate case is never silently reported as a low score.
     """
+    from sklearn.metrics import silhouette_score  # lazy import
     D = np.asarray(D, float)
     out = {}
     for k in ks:

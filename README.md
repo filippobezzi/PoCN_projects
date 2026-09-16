@@ -60,17 +60,30 @@ Rscript -e 'source("plot_figures.R"); plot_all()'
 ```
 
 ### Task 41: Tangled Nature Model (C++ / Python)
+
+**Python environment**: requires `numpy`, `scipy`, `matplotlib`, `seaborn`, and
+`scikit-learn`. Install via `pip install -r code/task_41/requirements.txt` or
+activate an environment that provides these (e.g. `conda activate ml`).
+
 - **Compile C++ Simulator**:
   ```bash
   cd code/task_41
   clang++ -std=c++11 -O3 -o tangled_nature tangled_nature.cpp
   ```
-- **Reproduce Manifold Figures**:
+- **Reproduce Manifold Figures** (from pre-computed data in `data/task_41/`):
   ```bash
   cd code/task_41
   python3 figures_r2.py
   python3 visualize_jacobian_core_halo.py
   ```
+- **Extended analysis pipeline** (requires the full simulation data tree; these
+  scripts are included for completeness but are not needed for figure
+  reproduction):
+  - `figures_r1.py` — write-up 1 figures (manifold geometry, null models)
+  - `manifold_nulls.py` — null-model clustering statistics
+  - `make_tables.py` — LaTeX tables and numeric macros
+  - `run_step5b_matched.py` — perturbation replica simulations (needs `tnm_sim` binary)
+  - `benchmark_protocols.py` — protocol comparison benchmarks (needs `tnm_sim` binary)
 
 ## LaTeX Compilation
 

@@ -306,7 +306,8 @@ nmi <- function(x, y) {                   # x,y contain the partition labels of 
 # 7. PLOTTING HELPERS
 # ---------------------------------------------------------------------------
 
-FIGDIR <- file.path("..", "figures")                                      # save to 'figures' dir
+FIGDIR <- Sys.getenv("POCN_FIGDIR", unset = file.path("..", "figures"))
+if (FIGDIR == "") FIGDIR <- file.path("..", "figures")
 dir.create(FIGDIR, showWarnings = FALSE, recursive = TRUE)
 
 open_png <- function(name, w = 2100, h = 750, res = 300, pointsize = 11) {

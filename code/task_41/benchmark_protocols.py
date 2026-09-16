@@ -34,15 +34,22 @@ import scipy.spatial.distance as ssd
 import matplotlib.pyplot as plt
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-CHECKPOINT_PATH = "data/step3/checkpoint_microstate_tstar.dat"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+_data = os.path.join(REPO_DIR, "data", "task_41") if os.path.isdir(
+    os.path.join(REPO_DIR, "data", "task_41")) else "data/step3"
+CHECKPOINT_PATH = os.path.join(_data, "checkpoint_microstate_tstar.dat")
 T_STAR = 3402
 WINDOW_T = 50
 TARGET_GENS = T_STAR + WINDOW_T
 REPLICAS = 10
-BIN_PATH = "./bin/tnm_sim"
+BIN_PATH = os.environ.get("TNM_BIN",
+    os.path.join(BASE_DIR, "tnm_sim") if os.path.exists(os.path.join(BASE_DIR, "tnm_sim"))
+    else "./bin/tnm_sim")
 TEMP_DIR = "/tmp/tana_bench"
-OUT_DIR = "data/step4"
-FIG_DIR = "fig/step4"
+OUT_DIR = os.path.join(_data, "step4")
+FIG_DIR = os.path.join(REPO_DIR, "latex", "images") if os.path.isdir(
+    os.path.join(REPO_DIR, "latex", "images")) else "fig/step4"
 
 os.makedirs(TEMP_DIR, exist_ok=True)
 os.makedirs(OUT_DIR, exist_ok=True)

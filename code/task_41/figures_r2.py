@@ -25,9 +25,14 @@ from tana_geometry import (community_jacobian, whitening_weights, response_dista
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
-DATA = os.path.join(REPO_DIR, "data", "task_41") if os.path.exists(os.path.join(REPO_DIR, "data", "task_41")) else "data"
-OUT = DATA if os.path.exists(os.path.join(DATA, "results.json")) else "results"
-FIG = os.path.join(REPO_DIR, "latex", "task_41", "fig") if os.path.exists(os.path.join(REPO_DIR, "latex", "task_41", "fig")) else "fig"
+DATA = os.environ.get("TANA_DATA",
+    os.path.join(REPO_DIR, "data", "task_41") if os.path.exists(os.path.join(REPO_DIR, "data", "task_41")) else "data")
+OUT = os.environ.get("TANA_OUT",
+    DATA if os.path.exists(os.path.join(DATA, "results.json")) else "results")
+FIG = os.environ.get("TANA_FIG",
+    os.path.join(REPO_DIR, "latex", "task_41", "fig") if os.path.exists(os.path.join(REPO_DIR, "latex", "task_41", "fig"))
+    else os.path.join(REPO_DIR, "latex", "images") if os.path.isdir(os.path.join(REPO_DIR, "latex", "images"))
+    else "fig")
 os.makedirs(FIG, exist_ok=True)
 PKILL, MU, NU, PMUT, L, W, SEED = 0.2, .10, 5e-6, .01, 20, (1, 3), 20260912
 RES = json.load(open(f"{OUT}/results.json"))

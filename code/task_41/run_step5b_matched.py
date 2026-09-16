@@ -27,10 +27,16 @@ import os, sys, json, math, time, subprocess
 import numpy as np
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-CKPT_DAT  = "data/step3/checkpoint_microstate_tstar.dat"
-CKPT_JSON = "data/step3/checkpoint_microstate_tstar.json"
-BIN       = os.environ.get("TNM_BIN", "./bin/tnm_sim")
-OUT       = "data/step5b"
+BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR  = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+_data     = os.path.join(REPO_DIR, "data", "task_41") if os.path.isdir(
+                os.path.join(REPO_DIR, "data", "task_41")) else "data/step3"
+CKPT_DAT  = os.path.join(_data, "checkpoint_microstate_tstar.dat")
+CKPT_JSON = os.path.join(_data, "checkpoint_microstate_tstar.json")
+BIN       = os.environ.get("TNM_BIN",
+                os.path.join(BASE_DIR, "tnm_sim") if os.path.exists(os.path.join(BASE_DIR, "tnm_sim"))
+                else "./bin/tnm_sim")
+OUT       = os.path.join(_data, "step5b")
 SHAM, PERT = f"{OUT}/sham", f"{OUT}/perturbed"
 T_STAR, WINDOW_T, REPLICAS, BASE_SEED = 3402, 50, 60, 5000
 TARGET_GENS = T_STAR + WINDOW_T

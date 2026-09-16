@@ -14,7 +14,14 @@ cannot drift from the analysis that produced it.
 """
 import json, os
 
-OUT, TEX = "results", "report"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
+OUT = os.environ.get("TANA_OUT",
+    os.path.join(REPO_DIR, "data", "task_41") if os.path.isdir(
+        os.path.join(REPO_DIR, "data", "task_41")) else "results")
+TEX = os.environ.get("TANA_TEX",
+    os.path.join(REPO_DIR, "latex") if os.path.isdir(
+        os.path.join(REPO_DIR, "latex")) else "report")
 os.makedirs(TEX, exist_ok=True)
 R = json.load(open(f"{OUT}/results.json"))
 NUL = json.load(open(f"{OUT}/manifold_nulls.json"))
