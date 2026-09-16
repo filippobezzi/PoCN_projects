@@ -1,0 +1,30 @@
+\begin{table*}[t]
+\caption{\label{tab:reliability}Does the measured response reproduce the
+constructed manifold?  Spearman correlations over the $\binom{86}{2}=3655$
+pairs, before and after removing the decoupled amplitude term $D_0$.  Null
+means and spreads come from 200 sham draws built from independent unperturbed
+ensemble means; $z$ is the excess over that null in units of its standard
+deviation.  Both designs use $R=60$ replicas and reach the same median
+signal-to-noise ratio, so the difference between the columns is not a
+difference in statistical power.}
+\begin{ruledtabular}
+\begin{tabular}{lcc}
+ & halo shift & amplitude-matched \\
+ & $\Delta n_i=-\min(n_i,5)$ & $\Delta n_i=-\mathrm{round}\sqrt{n_i}$ \\ \hline
+whitened kick spread & $74\times$ & $2.7\times$ \\
+forced extinctions & 77/86 & 34/86 \\ \hline
+$\rho(D,D_{\rm Jac})$ & $+0.495$ & $-0.002$ \\
+$\rho$ after removing $D_0$ & $+0.067$ & $+0.006$ \\
+\quad null mean $\pm$ s.d. & $+0.004\pm0.031$ & $+0.004\pm0.038$ \\
+\quad $z$ & $+2.07$ & $+0.06$ \\ \hline
+$\rho(D,D_0)$ alone & $+0.491$ & $-0.006$ \\
+$\rho(D,D_{\rm Jac})$, interactions deleted & $+0.088$ & $+0.007$ \\ \hline
+$\rho(D,D_H)$ genomic & $-0.083$ & $+0.028$ \\
+$\rho(D,D_{\rm int})$ interaction profile & $+0.031$ & $+0.031$ \\ \hline
+silhouette $s(k{=}2)$ & $+0.017$ & $+0.016$ \\
+\quad $z$ vs sham null & $-4.45$ & $-4.48$ \\
+Hopkins $H$ & $0.624$ & $0.651$ \\
+ARI with the manifold, $k=4$ & $+0.021$ & $-0.018$ \\
+\end{tabular}
+\end{ruledtabular}
+\end{table*}

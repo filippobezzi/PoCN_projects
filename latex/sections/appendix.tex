@@ -1,0 +1,80 @@
+\chapter{Mathematical Proofs and Analytical Derivations}
+\label{chap:appendix}
+
+\section{Proof of the Synchronisation Order Parameter -- Diffusion Distance Equivalence}
+\label{app:proof_eq2}
+
+Here we provide the complete first-principles proof demonstrating that the linearised Kuramoto pairwise order parameter $\rho_{ij}(t) = \langle \cos(\theta_i(t) - \theta_j(t)) \rangle$ is equivalent to the Gaussian kernel over diffusion distance $d_t(i,j)$.
+
+\paragraph{Linearised Dynamics and Phase Covariance Matrix:}
+In the co-rotating frame and for small phase differences, the Kuramoto dynamics reduce to the graph heat equation:
+\begin{equation}
+\dot{\bm\theta} = -K \mathbf{L} \bm\theta \implies \bm\theta(t) = e^{-K \mathbf{L} t} \bm\theta(0).
+\label{eq:heat_app}
+\end{equation}
+Assuming independent Gaussian initial conditions $\bm\theta(0) \sim \mathcal{N}(\mathbf{0}, \sigma^2 \mathbb{I})$, the mean phase vector is $\langle \bm\theta(0) \rangle = \mathbf{0}$ and the covariance is $\langle \bm\theta(0) \bm\theta(0)^\top \rangle = \sigma^2 \mathbb{I}$. Because $\bm\theta(t)$ is a linear transformation of $\bm\theta(0)$, $\bm\theta(t)$ remains a zero-mean Gaussian random vector with covariance matrix:
+\begin{align}
+\mathbf{C}(t) &\equiv \langle \bm\theta(t) \bm\theta(t)^\top \rangle 
+= e^{-K\mathbf{L}t} \langle \bm\theta(0) \bm\theta(0)^\top \rangle e^{-K\mathbf{L}^\top t} \nonumber\\
+&= \sigma^2 e^{-2K\mathbf{L}t} 
+= \sigma^2 \sum_{\alpha=1}^N e^{-2K\lambda_\alpha t} \mathbf{v}_\alpha \mathbf{v}_\alpha^\top.
+\end{align}
+
+\paragraph{Phase Difference Distribution:}
+For any pair of nodes $(i,j)$, the phase difference $\Delta_{ij}(t) = \theta_i(t) - \theta_j(t) = (\mathbf{e}_i - \mathbf{e}_j)^\top \bm\theta(t)$ is a linear projection of a Gaussian vector, and thus $\Delta_{ij}(t) \sim \mathcal{N}(0, s_{ij}^2(t))$ with variance:
+\begin{equation}
+s_{ij}^2(t) = (\mathbf{e}_i - \mathbf{e}_j)^\top \mathbf{C}(t) (\mathbf{e}_i - \mathbf{e}_j) = C_{ii}(t) + C_{jj}(t) - 2 C_{ij}(t).
+\end{equation}
+Substituting the spectral decomposition:
+\begin{equation}
+s_{ij}^2(t) = \sigma^2 \sum_{\alpha=1}^N e^{-2K\lambda_\alpha t} \left( v_\alpha(i)^2 + v_\alpha(j)^2 - 2 v_\alpha(i) v_\alpha(j) \right) 
+= \sigma^2 \sum_{\alpha=1}^N e^{-2K\lambda_\alpha t} \left( v_\alpha(i) - v_\alpha(j) \right)^2.
+\end{equation}
+
+\paragraph{Isolation of the Zero Eigenmode:}
+For a connected graph, the smallest eigenvalue $\lambda_1 = 0$ is simple, with constant eigenvector $\mathbf{v}_1 = \frac{1}{\sqrt{N}} \mathbf{1}$. Therefore, for every pair $(i, j)$:
+\begin{equation}
+v_1(i) - v_1(j) = \frac{1}{\sqrt{N}} - \frac{1}{\sqrt{N}} = 0.
+\end{equation}
+The $\alpha = 1$ term identically vanishes for all $t$:
+\begin{equation}
+s_{ij}^2(t) = \sigma^2 \sum_{\alpha=2}^N e^{-2K\lambda_\alpha t} \left( v_\alpha(i) - v_\alpha(j) \right)^2.
+\end{equation}
+
+\paragraph{Characteristic Function and Order Parameter:}
+The pairwise order parameter $\rho_{ij}(t) = \langle \cos(\theta_i - \theta_j) \rangle$ is the real part of the characteristic function $\phi_{\Delta_{ij}}(1) = \langle e^{i \Delta_{ij}} \rangle$. For a zero-mean Gaussian variable with variance $s_{ij}^2(t)$:
+\begin{equation}
+\langle e^{i \Delta_{ij}} \rangle = \exp\left( -\frac{1}{2} s_{ij}^2(t) \right).
+\end{equation}
+Because this expression is strictly real:
+\begin{equation}
+\rho_{ij}(t) = \mathrm{Re}\langle e^{i \Delta_{ij}} \rangle = \exp\left( -\frac{1}{2} s_{ij}^2(t) \right).
+\end{equation}
+Comparing with the definition of the graph diffusion distance $d_t^2(i,j) = \|\mathbf{\Psi}_t(i) - \mathbf{\Psi}_t(j)\|^2$ in the diffusion map $\mathbf{\Psi}_t(i) = \sigma (e^{-K\lambda_2 t} v_2(i), \dots, e^{-K\lambda_N t} v_N(i))$~\cite{coifman2006}:
+\begin{equation}
+d_t^2(i,j) = \sigma^2 \sum_{\alpha=2}^N e^{-2K\lambda_\alpha t} \left( v_\alpha(i) - v_\alpha(j) \right)^2,
+\end{equation}
+we confirm $s_{ij}^2(t) = d_t^2(i,j)$, completing the proof:
+\begin{equation}
+\rho_{ij}(t) = \exp\left( -\frac{1}{2} d_t^2(i,j) \right). \quad \square
+\end{equation}
+
+\section{Block Structure of the Tangled Nature Community Jacobian}
+\label{app:t41_jacobian_blocks}
+Partitioning the $S$ populated genotypes into the autonomous mutualistic core ($C$, size $S_{\text{core}} = 4$) and the passive mutational halo ($H$, size $S_{\text{halo}} = 82$), the community Jacobian $K$ partitions into four blocks:
+\begin{equation}
+K = \begin{pmatrix}
+K_{CC} & K_{CH} \\
+K_{HC} & K_{HH}
+\end{pmatrix}.
+\end{equation}
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Core-Core Block ($K_{CC}$):} Governed by strong mutualistic cross-couplings and carrying-capacity damping. Its four eigenvalues lie deep in the left half-plane ($|\lambda| \in [26, 105]$), reflecting rapid collective relaxation ($\tau < 0.04$ generations).
+\item \textbf{Halo-Halo Block ($K_{HH}$):} Because halo species have negligible abundances ($n_h \ll N$) and zero autonomous reproduction ($p_{\text{off}} \le 10^{-32}$), the derivative $\partial \dot{n}_h / \partial n_{h'}$ vanishes for all $h \neq h'$, while the diagonal simplifies to demographic relaxation:
+\begin{equation}
+K_{hh} = 2 p_{\text{off}}(H_h) - p_{\text{kill}} \approx -p_{\text{kill}} = -0.20 \quad (\text{or } -1.0 \text{ in generational units}).
+\end{equation}
+Hence $K_{HH} \approx -p_{\text{kill}} \mathbb{I}_{82}$ is degenerate.
+\item \textbf{Halo-Core Block ($K_{HC}$):} Halo abundances are driven by mutational leakage from core parents. Differentiating the mutation influx $n_h^{\text{in}} = \sum_{c} M(c \to h) p_{\text{off}}(H_c) n_c$ generates directed coupling from core to halo, but no reciprocal feedback from halo to core ($K_{CH} \approx \mathbf{0}$).
+\end{enumerate}
+Consequently, the system exhibits a triangular block structure: perturbations to halo genotypes do not propagate to the core, explaining why the empirical response manifold is continuous and governed by single-node demographic decay rather than collective low-dimensional attractors.

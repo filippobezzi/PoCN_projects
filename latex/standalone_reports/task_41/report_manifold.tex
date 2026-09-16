@@ -1,0 +1,326 @@
+\documentclass[twocolumn,amsmath,amssymb,aps,pra,10pt,floatfix,nofootinbib]{revtex4-2}
+
+\usepackage{graphicx}
+\usepackage{dcolumn}
+\usepackage{bm}
+\usepackage{physics}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+
+\graphicspath{{../fig/}{fig/}}
+\input{numbers}
+
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+
+\begin{document}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\title{Exploring Dynamical Response Geometry and Phase-Space Dynamics in the Tangled Nature Model}
+
+\author{Physics of Complex Networks (PCN) --- Project 41}
+\affiliation{Department of Physics and Astronomy ``G. Galilei'', University of Padua}
+\date{\today}
+
+\begin{abstract}
+In the Tangled Nature model of coevolving networks, communities organize into quasi-Evolutionary Stable States (qESS) punctuated by macroscopic reorganizations. Here, we explore the physical mechanisms governing perturbation-response geometry and phase-space dynamics across transitions. At a mutualistic qESS plateau ($N=\Nstar$, $S=\Sstar$), where synergistic mutualism overcomes carrying capacity mortality, global competition imposes an exact survival threshold: four core mutualists concentrate \corebio\% of biomass, while \nhalo\ non-autonomous halo genotypes ($p_{\text{off}} \le 10^{-32}$) persist through mutational leakage from the core (predicted without free parameters, $\rho = \haloRho$). Linearizing the community Jacobian $K$ reveals a spectral timescale inversion: halo linear responses are governed by single-node demographic relaxation ($\lambda = -1.0$) rather than collective core modes ($|\lambda| \in [26, 105]$). Across $5{,}220$ stochastic replicas, an amplitude-matched protocol ($\Delta n_i = -\mathrm{round}\sqrt{n_i}$) eliminates demographic kick artifacts, uncovering a continuous response manifold smoother than demographic noise ($z = \silZMatched$). Finally, tracking an evolutionary transition reveals that stochastic mutational occupancy drives a linear instability ($\mathrm{Re}(\lambda_{\max}) > 0$), triggering deterministic population collapse and latent centroid migration. A fixed-membership control confirms that phase-space delocalization surges by $\sigRatioFix\times$ independent of taxonomic turnover.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction and Scope}
+\label{sec:intro}
+
+Predicting how multi-species communities respond to external perturbations and how they reorganize across evolutionary transitions is a fundamental frontier in network physics and non-equilibrium statistical mechanics~\cite{gao2016universal}. In ecological and biological networks, interactions are rarely fixed; they self-assemble dynamically through coevolution on high-dimensional genomic landscapes. The Tangled Nature (TaNa) model~\cite{christensen2002tangled} provides an idealized individual-based statistical physics framework to explore these phenomena, capturing spontaneous structural assembly and punctuated equilibrium: long quiet epochs of macroscopic stability, known as quasi-Evolutionary Stable States (qESS), punctuated by rapid extinction cascades and community turnover~\cite{becker2014evolution}.
+
+Recently, Barzon \textit{et al.}~\cite{barzon2024unraveling} introduced an operational framework to infer functional relationships between network components directly from perturbation dynamics: by applying targeted abundance displacements and tracking the propagating response vectors $\delta\mathbf{x}_{(i)}(t)$ in relative frequency space $x_a(t) = n_a(t) / N(t)$, one constructs a functional distance matrix $D(i,j)$ that quantifies dynamical equivalence. While in empirical systems the true underlying equations of motion remain unknown, the TaNa model offers a unique analytical advantage: its microscopic birth-death rules yield a closed-form mean-field linearization (the community Jacobian $K$)~\cite{cairoli2014forecasting}. This allows us to construct the latent response manifold analytically and interrogate its microscopic physical origin.
+
+In this work, we present a complete theoretical and numerical investigation of the perturbation-response geometry and phase-space dynamics of the TaNa model. In Section~\ref{sec:model}, we formulate the microscopic dynamics, derive the exact autonomous survival threshold, and construct the closed-form community Jacobian, highlighting why retaining the hypercube mutation kernel is mathematically essential to avoid trivial decoupling. In Section~\ref{sec:core}, we demonstrate how global resource competition restricts autonomous reproduction to a tightly bound mutualistic core ($S_{\text{core}} = 4$), and validate a parameter-free formula predicting the abundances of the passive mutant halo. In Section~\ref{sec:consequence}, we explore the physical geometry of the response space, evaluating the interplay between fast core modes, damped halo decay, and the decoupled amplitude baseline $D_0(i,j)$, benchmarked against an ensemble of $5{,}220$ stochastic replica simulations. Finally, in Section~\ref{sec:transition}, we reconstruct the generational anatomy of an actual punctuated transition, demonstrating how stochastic mutational occupancy serves as an internal control parameter driving a saddle-node bifurcation, and employing a fixed-membership control---evaluating spatial dispersion strictly on the invariant subset of lineages surviving throughout the transition---to separate genuine dynamical phase-space delocalization from the compositional artifacts of species turnover.
+
+\section{Model, Community Jacobian, and Response Metric}
+\label{sec:model}
+
+\subsection{Microscopic Rules and Quenched Interactions}
+
+In the Tangled Nature model, organisms are defined by a binary genome sequence $\mathbf{s}_a \in \{0,1\}^L$ of length $L = 20$, spanning a Boolean sequence space of size $|\mathcal{S}| = 2^{20} \approx 10^6$. The extant community at generation $t$ consists of $N(t) = \sum_{a=1}^S n_a(t)$ individuals distributed across $S(t) \ll 2^L$ populated genotypes. Interspecies couplings are governed by a quenched random interaction matrix $J(a,b)$ constructed via lookup tables indexed by the bitwise XOR distance~\cite{rudyarthur-tnm}:
+\begin{equation}
+J(a,b) = \operatorname{mask}[a \oplus b] \cdot c[a \oplus b] \cdot g[b],
+\label{eq:J}
+\end{equation}
+where $\operatorname{mask}[s] \sim \operatorname{Bernoulli}(\theta)$ enforces an interaction sparsity $\theta = 0.25$, $c[s] \sim \mathcal{N}(0, 1)$ sets the coupling weight, and $g[b] \sim \mathcal{N}(0, C^2)$ scales the interaction intensity with the standard deviation $C$ acting statistically as a sort of coupling parameter. Diagonal self-interactions vanish ($J(a,a) = 0$), and interaction topology is symmetric ($J(a,b) \neq 0 \iff J(b,a) \neq 0$), but coupling weights are asymmetric ($J(a,b) \neq J(b,a)$). This weight asymmetry generates non-reciprocal trophic, parasitic, and mutualistic relationships, rendering the resulting Jacobian strongly non-normal~\cite{trefethen2005spectra}.
+
+The reproductive fitness of an individual of genotype $a$ embedded in community $\mathbf{n}$ is:
+\begin{equation}
+H_a(\mathbf{n}) = \frac{1}{N} \sum_{b \neq a} J(a,b) n_b - \mu N - \nu N^2,
+\label{eq:H}
+\end{equation}
+where $\mu N$ represents a linear per-capita resource competition cost and $\nu N^2$ provides quadratic damping ($\nu = 5 \times 10^{-6}$) against demographic explosion. Abiotic environmental fitness is decoupled ($\sigma = 0$) to isolate purely endogenous network interactions. An individual reproduces with logistic probability:
+\begin{equation}
+p_{\text{off}}(H_a) = \frac{1}{1 + e^{-H_a}}.
+\label{eq:poff}
+\end{equation}
+Microscopic dynamics advance asynchronously: an individual chosen uniformly from the population dies with probability $p_{\text{kill}} = 0.20$; a second candidate is selected to reproduce with probability $p_{\text{off}}(H_a)$, each bit of the offspring genome mutating independently with probability $p_{\text{mut}} = 0.01$. One generation comprises $\tau = N / p_{\text{kill}}$ elementary birth-death updates, ensuring that each individual experiences on average $1/p_{\text{kill}}$ death trials (yielding an expected mortality rate of $(1/p_{\text{kill}}) \times p_{\text{kill}} = 1$ death per generation) and $1/p_{\text{kill}}$ reproduction attempts.
+
+To explore this perturbation geometry, we analyze a stationary quasi-evolutionary stable state (qESS) plateau governed by canonical parameters: coupling scale $C = \Ccoupling$, linear competition $\mu = 0.10$, quadratic damping $\nu = 5 \times 10^{-6}$, mortality $p_{\text{kill}} = 0.20$, mutation probability $p_{\text{mut}} = 0.01$, bit length $L = 20$, and sparsity $\theta = 0.25$. Following transient assembly ($t \lesssim 500$ generations), the ecosystem settles into an extended qESS plateau where macroscopic observables fluctuate around invariant stationary expectations. The checkpoint time $t^* = \tstar$ generations is recorded deep inside this quiet epoch---well after initial assembly transients and far prior to any destabilizing mutational reorganization---providing an invariant microstate where demographic stationarity ($\frac{d\langle N\rangle}{dt} \approx 0$) holds.
+
+\subsection{Autonomous Reproduction Threshold and Steady-State Parameter Balance}
+
+A central question in coevolutionary dynamics is determining the minimal fitness required for a lineage to sustain itself autonomously. Balancing the expected per-generation population change under mean-field conditions (neglecting incoming mutational flux):
+\begin{equation}
+\mathbb{E}[\Delta n_a] = n_a \left[ \frac{p_{\text{off}}(H_a)}{p_{\text{kill}}} - 1 \right] \ge 0,
+\end{equation}
+we find that reproduction must match or exceed mortality ($p_{\text{off}} \ge p_{\text{kill}}$). Inverting the logistic function yields the exact \textit{autonomous survival threshold}\footnote[2]{See Supplementary Material for complete first-principles derivations and details.}:
+\begin{equation}
+H_a \ge H_{\text{crit}} \equiv \ln\left( \frac{p_{\text{kill}}}{1 - p_{\text{kill}}} \right) = \ln(0.25) \approx -1.38629.
+\label{eq:Hcrit}
+\end{equation}
+Any genotype with $H_a < H_{\text{crit}}$ experiences negative net demographic growth and can only persist if sustained by continuous mutational influx from reproducing parent species.
+
+This threshold directly connects the stationary checkpoint state variables ($N^* = \Nstar$, $S^* = \Sstar$, $\mathbf{n}^*$, $x_a^*$) to the configuration parameters. At demographic stationarity ($\frac{dn_a}{dt} = 0$), summing expected demographic rates over all species requires total reproduction to match total mortality: $\sum_a n_a^* p_{\text{off}}(H_a^*) = p_{\text{kill}} N^*$, fixing average reproductive probability to $\bar{p}_{\text{off}} = p_{\text{kill}} = 0.20$. Because non-reproducing halo genotypes ($H_h \le -74.4$) have negligible reproduction ($p_{\text{off}} \le 10^{-32}$), total community reproduction is supplied exclusively by the mutualistic core clique $\mathcal{C}$ ($S_{\text{core}} = 4$, containing $N_{\text{core}} = 898$ individuals, or $\corebio\%$ of total biomass). For these core mutualists, balancing per-capita mortality pins their fitness to the autonomous threshold: $H_c^* \approx H_{\text{crit}}$. Equating this to the fitness definition Eq.~\eqref{eq:H} yields the macroscopic carrying capacity balance:
+\begin{equation}
+\bar{H}_{I,\text{core}} - \mu N^* - \nu (N^*)^2 \approx H_{\text{crit}},
+\label{eq:Nstar_balance}
+\end{equation}
+where $\bar{H}_{I,\text{core}} = \frac{1}{N^*} \sum_{b \in \mathcal{C}} J(c,b) n_b^*$ is the mean per-capita cooperative gain generated by the core. Solving this quadratic relation explicitly links the stationary population to the configuration parameters:
+\begin{equation}
+N^* = \frac{-\mu + \sqrt{\mu^2 + 4\nu (\bar{H}_{I,\text{core}} - H_{\text{crit}})}}{2\nu} \approx 1102.
+\label{eq:Nstar_quad}
+\end{equation}
+Here, the core cooperative energy $\bar{H}_{I,\text{core}} \approx 115$ is determined by the mutualistic couplings $J(a,b) \sim \mathcal{O}(C)$. At coupling scale $C = 200$ and sparsity $\theta = 0.25$, typical non-zero links have magnitude $\sim \theta C = 50$, generating the requisite $\approx 115$ units across $S_{\text{core}} = 4$ mutualists to sustain $N^* \approx 1102$ against linear competition $\mu N^* \approx 110.2$ and quadratic damping $\nu (N^*)^2 \approx 6.1$.
+
+\subsection{Community Jacobian and the Mutation Kernel}
+
+Accounting for expected demographic changes over the $N / p_{\text{kill}}$ trials of one generation yields the mean-field equations of motion\footnotemark[2]:
+\begin{equation}
+\frac{dn_a}{dt} = -n_a + \frac{1}{p_{\text{kill}}} \sum_{c=1}^S n_c p_{\text{off}}(H_c) M(c \to a),
+\label{eq:mf}
+\end{equation}
+where $M(c \to a) = p_{\text{mut}}^{h(c,a)} (1 - p_{\text{mut}})^{L - h(c,a)}$ is the binomial mutation kernel on the hypercube with Hamming distance $h(c,a)$. Differentiating Eq.~\eqref{eq:mf} with respect to abundance $n_b$ yields the community Jacobian matrix $K \in \mathbb{R}^{S \times S}$, which in the framework of perturbation-response geometry governs the linear propagator $e^{Kt}$ from~\cite{barzon2024unraveling}:
+\begin{equation}
+\begin{split}
+K_{ab} = -\delta_{ab} + \frac{1}{p_{\text{kill}}} \Bigg[ & p_{\text{off}}(H_b) M(b \to a) \\
+& + \sum_{c=1}^S n_c p_{\text{off}}'(H_c) \frac{\partial H_c}{\partial n_b} M(c \to a) \Bigg],
+\end{split}
+\label{eq:K}
+\end{equation}
+with $\partial H_c / \partial n_b = [J(c,b) - F_c / N] / N - \mu - 2\nu N$ and total interaction energy $F_c = \sum_b J(c,b) n_b$.
+
+A crucial methodological insight discovered in our analysis is that retaining the explicit mutation kernel $M(c \to a)$ is mathematically indispensable\footnotemark[2]. In the existing literature~\cite{cairoli2014forecasting}, analytical Jacobians frequently omitted the mutational coupling terms. However, for any non-reproducing halo species ($p_{\text{off}} \approx 0$), omitting the mutation kernel causes the Jacobian row to collapse identically to $-\delta_{ab}$. As a result, the linear propagator $e^{Kt}$ degenerates into uncoupled exponential decay $e^{-t} \mathbb{I}$ on the halo block to machine precision (the largest off-diagonal entry is $\propcoreNM$). Without the mutation kernel, the propagator carries zero network information; retaining $M(c \to a)$ correctly captures mutational leakage and couples the halo to the mutualistic core.
+
+\subsection{Whitened Metric and Community Jacobian Distance}
+
+Following the framework of perturbation-response geometry~\cite{barzon2024unraveling}, dynamical relatedness between network components can be probed by applying localized abundance displacements and tracking the propagating response cascades. In our analysis, we contrast two distinct representations of perturbation geometry: the \textit{analytical community Jacobian distance} $D_{\text{Jac}}(i,j)$, derived from the linearized mean-field propagator, and the \textit{empirical functional response distance} $D(i,j)$ (also termed the empirical Jacobian distance), measured directly from individual-based stochastic simulations.
+
+Perturbing species $i$ by an abundance shift $\Delta n_i$ generates an initial frequency displacement vector $\mathbf{u}_i(0) = -\Delta n_i \mathbf{e}_i / N^*$. If responses were evaluated under an unweighted Euclidean metric, abundant core species would dominate distances simply because intrinsic Poisson demographic fluctuations scale with abundance ($\operatorname{Var}(x_a) \approx x_a^* / N^*$). To ensure that every extant genotype contributes equally per unit of signal-to-noise ratio regardless of abundance, we employ the variance-stabilizing whitened norm:
+\begin{equation}
+\|\mathbf{u}\|_w^2 = \sum_{a=1}^S \frac{u_a^2}{x_a^*},
+\label{eq:whitened_norm}
+\end{equation}
+where $x_a^* = n_a^* / N^*$ is the stationary relative frequency.
+
+Under the linear mean-field approximation, the initial perturbation propagates according to $\mathbf{u}_i(t) = e^{Kt} \mathbf{u}_i(0) = \frac{1}{N^*} e^{Kt} \Delta\mathbf{n}_i$, governed by the analytical community Jacobian matrix $K$ from Eq.~\eqref{eq:K}. The \textit{analytical community Jacobian distance} $D_{\text{Jac}}(i,j)$ between species $i$ and $j$ is the time-averaged whitened Euclidean distance between their deterministic linear response cascades over observation window $T = [1, 3]$ generations:
+\begin{equation}
+\begin{split}
+D_{\text{Jac}}(i,j) &\equiv \frac{1}{|T|} \sum_{t \in T} \left\| \mathbf{u}_i(t) - \mathbf{u}_j(t) \right\|_w \\
+&= \frac{1}{|T|} \sum_{t \in T} \sqrt{ \sum_{a=1}^S \frac{\left( u_{i,a}(t) - u_{j,a}(t) \right)^2}{x_a^*} }.
+\end{split}
+\label{eq:D_jac}
+\end{equation}
+This theoretical distance represents the purely deterministic, linear response predicted by the mean-field equations of motion in the absence of demographic noise.
+
+\section{Competition Sets the Number of Active Actors}
+\label{sec:core}
+
+\subsection{The Survival Line and Mutualistic Bounding}
+
+Combining the fitness definition Eq.~\eqref{eq:H} with the autonomous threshold Eq.~\eqref{eq:Hcrit}, a genotype can sustain its population autonomously only if its per-capita cooperative gain clears a stringent community-wide threshold:
+\begin{equation}
+H_I(a) \equiv \frac{1}{N} \sum_b J(a,b) n_b \ge \mu N + \nu N^2 + H_{\text{crit}}.
+\label{eq:line}
+\end{equation}
+The right-hand side is identical for every species in the community. At the checkpoint state ($N = \Nstar$), this requires a cooperative gain of $H_I(a) \ge 115$. This represents a demanding physical barrier: because the quenched interaction matrix $J(a,b)$ has zero mean, a randomly assembled set of interaction partners yields an expected cooperative contribution of $\mathbb{E}[\sum J n] \approx 0$. Positive interaction energy cannot arise through diffuse, large-scale cooperation. Instead, clearing the survival line requires a tightly coordinated mutualistic clique $\mathcal{C}$ whose members share reciprocal positive couplings ($J(a,b) > 0$ and $J(b,a) > 0$).
+
+Because the probability that a candidate sequence possesses mutually cooperative couplings with all $k$ existing members scales as $\frac{1}{2}(\theta / 2)^k = \frac{1}{2}(0.125)^k$\footnotemark[2], and because core species are very frequent a single negative cross-coupling can exert severe destabilizing drag, resulting in viable mutualistic cliques to be strictly bounded to small numbers of species. As shown in Fig.~\ref{fig:mechanism}(a), at our operating point exactly four genotypes clear the survival line, carrying \corebio\% of total community individuals. Every other extant genotype suffers $H_a \le -74.4$, resulting in an infinitesimal reproduction probability ($p_{\text{off}} \le 10^{-32}$) that completely precludes autonomous reproduction. This non-autonomous cloud represents the phenomenon of \textit{mutational leakage}: the continuous, unavoidable generation of non-viable mutant offspring produced by replicating core parents. While halo genotypes are demographically sterile on their own ($p_{\text{off}} \ll p_{\text{kill}}$), they are continuously replenished by single-bit mutational influx from the reproducing core.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{r2_mechanism.pdf}
+\caption[Community Mechanism and Singular Spectrum]{\textbf{Macroscopic Constraints, Mutational Sustenance, and High-Dimensional Response Variance.} 
+(a) Cooperative gain $H_I$ plotted against abundance rank on a symmetric-log scale. The horizontal line marks the autonomous survival threshold $\mu N + \nu N^2 + H_{\text{crit}} = 115$. Only four of $\Sstar$ extant types clear this threshold, while all remaining species sit at $H_I \approx 0$ with fitness dominated by the resource penalty $-\mu N$. 
+(b) Observed stationary abundances of the $\nhalo$ non-reproducing halo species plotted against the parameter-free mutational leakage prediction of Eq.~\eqref{eq:halo}. The dashed line is the exact $y = x$ identity line (no fitted parameters), demonstrating strong agreement ($\rho = \haloRho$, median ratio $\haloRatio$). 
+(c) Cumulative share of Jacobian response variance as a function of singular-value index: $\rankPred$ of $\Sstar$ orthogonal singular directions are required to capture 90\% of the response variance ($\rankMeas$ directions for the empirical measurement; horizontal dashed line marks 90\%), disproving low-dimensional compression in response space.}
+\label{fig:mechanism}
+\end{figure*}
+
+\subsection{Parameter-Free Prediction of Mutational Halo Sustenance}
+
+If only four species reproduce, what sustains the remaining \nhalo\ extant genotypes? In each generation, reproducing core individuals leak mutational offspring into adjacent sequence nodes on the 20-bit hypercube. For any non-reproducing halo type $h$ (where $p_{\text{off}}(h) \approx 0$), demographic balance between natural mortality and incoming mutational flux requires:
+\begin{equation}
+\frac{dn_h}{dt} = -p_{\text{kill}} n_h + \sum_{c \in \text{core}} n_c p_{\text{off}}(H_c) M(c \to h) = 0.
+\end{equation}
+Solving for the stationary abundance yields a closed-form formula:
+\begin{equation}
+n_h^* = \frac{1}{p_{\text{kill}}} \sum_{c \in \text{core}} n_c p_{\text{off}}(H_c) M(c \to h).
+\label{eq:halo}
+\end{equation}
+Every quantity on the right-hand side is known from the checkpoint microstate. As shown in Fig.~\ref{fig:mechanism}(b), this parameter-free prediction correlates strongly with the observed abundances across all non-reproducing genotypes ($\rho = \haloRho$) with an unbiased median predicted-to-observed ratio of \haloRatio. Restricting the summation to only the four core types produces identical results to three decimal places, confirming that the mutational halo is completely sustained by leakage from the mutualistic core.
+
+\section{Physical Determinants of Response Geometry}
+\label{sec:consequence}
+
+\subsection{Timescale Inversion and High-Dimensional Dynamics}
+
+The observation that biomass is concentrated into four mutualists while halo abundances are fixed by core mutational leakage suggests an appealing physical intuition: could the ecosystem's dynamical response be described by a low-dimensional center manifold where the halo modes are passively enslaved to four core order parameters~\cite{haken1983synergetics}?
+
+Our quantitative eigenvalue and subspace analysis demonstrates that this intuitive picture fails due to a fundamental physical mechanism: \textit{timescale inversion}. In Haken's slaving principle, enslaved variables must be \emph{fast} (heavily damped) relative to the slow order parameters that govern macroscopic evolution. In the Tangled Nature Jacobian, however:
+\begin{itemize}
+    \item non-reproducing halo types have eigenvalues of exactly $-1.0$ (decaying at the density-independent death rate $p_{\text{kill}}$, corresponding to an adiabatic relaxation timescale of $\tau \approx 1$ generation).
+    \item in contrast, the four reproducing core mutualists possess eigenvalue moduli spanning $|\lambda| \in [26, 105]$, relaxing within $0.01 - 0.04$ generations.
+\end{itemize}
+The core modes are one to two orders of magnitude \emph{faster} than the halo modes. Because the core modes equilibrate almost instantaneously while the halo decays slowly, the classical adiabatic elimination runs in reverse.
+
+Furthermore, projecting the full time-dependent response vectors of non-core species onto the subspace spanned by the four core responses captures a median of only \coreFrac\% of their squared norm (Fig.~\ref{fig:geometry}(c)). Non-core perturbation responses do not collapse into linear combinations of core trajectories; instead, each halo species responds along its own direct decay coordinate. As a direct consequence, the response space is intrinsically high-dimensional: as shown in Fig.~\ref{fig:mechanism}(c), $\rankPred$ of $\Sstar$ singular directions are needed to account for 90\% of the predicted response variance, and $\rankMeas$ directions for the empirical measurement. The first two Classical Multidimensional Scaling (MDS) coordinates capture only 4\% of the total variance\footnote[2]{See Supplementary Material.} (Fig.~\ref{fig:geometry}(a)), proving that 2D embeddings represent low-dimensional projections rather than a low-dimensional manifold.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{r2_geometry.pdf}
+\caption[Response Geometry and Subspace Projections]{\textbf{Geometry of the Jacobian Response Manifold and Protocol Calibration.} 
+(a) Two-dimensional Classical MDS embedding of the Jacobian distance matrix $D_{\text{Jac}}$ at $t^* = \tstar$, colored by ecological tier (Core, Sub-core, Halo). Because the leading two axes account for only $\approx 4\%$ of total variance, this represents a low-dimensional projection of an intrinsically high-dimensional response space. 
+(b) Distribution of Jacobian functional distance within each genomic Hamming class $D_H \in [1, 15]$. Correlation with sequence distance is negligible ($\rho = \rhoJacHam$), reflecting the quenched, uncorrelated nature of hypercube couplings. 
+(c) Fraction of each non-core response vector lying in the subspace spanned by the four core responses. The median overlap is only \coreFrac\% (dashed vertical line), demonstrating that halo responses are dominated by individual self-decay rather than being low-dimensionally spanned by the core mutualists.}
+\label{fig:geometry}
+\end{figure*}
+
+\subsection{The Uncoupled Amplitude Baseline \texorpdfstring{$D_0(i,j)$}{D0(i,j)}}
+
+If the perturbation geometry is neither low-dimensional nor spanned by the core, what governs the structure of the analytical response manifold $D_{\text{Jac}}(i,j)$? Our analysis revealed that pairwise response distances are heavily influenced by the initial perturbation amplitude. To see this, suppose all species were uncoupled ($J \equiv 0$), relaxing independently at the baseline generational mortality rate $\lambda = -1.0$: an initial shift $\Delta n_i$ on species $i$ produces the uncoupled single-node frequency trajectory $u_{i, a}(t) = -\delta_{ia} \frac{\Delta n_i}{N^*} e^{-t}$. Computing the instantaneous distance between the responses to target $i$ and target $j$ under the whitened norm yields:
+\begin{equation}
+\begin{split}
+\|\mathbf{u}_i(t) - \mathbf{u}_j(t)\|_w^2 &= \frac{u_{i,i}(t)^2}{x_i^*} + \frac{u_{j,j}(t)^2}{x_j^*} \\
+&= \frac{e^{-2t}}{N^*} \left[ \frac{\Delta n_i^2}{n_i^*} + \frac{\Delta n_j^2}{n_j^*} \right],
+\end{split}
+\end{equation}
+where the $^*$ denotes steady-state values. Averaging over observation window $T$, the time-dependent factor integrates to a universal constant prefactor $C_T = \frac{1}{|T|} \int_T \frac{e^{-t}}{\sqrt{N^*}} dt$, leaving the pairwise distance strictly proportional to the uncoupled amplitude baseline:
+\begin{equation}
+D_0(i,j) = \sqrt{\frac{\Delta n_i^2}{n_i^*} + \frac{\Delta n_j^2}{n_j^*}}.
+\label{eq:D0}
+\end{equation}
+Equation~\eqref{eq:D0} contains zero network interactions: it depends solely on the perturbation sizes and baseline abundances of the two targets.
+
+To illustrate how perturbation magnitude can distort measured response geometry, consider a baseline fixed-size perturbation protocol ($\Delta n_i = -\min(n_i, 5)$). Because stationary abundances in the community span three orders of magnitude ($n_i \in [1, 400]$), applying a fixed displacement of 5 individuals causes the initial whitened kick amplitude $\|\mathbf{u}_i(0)\|_w \propto |\Delta n_i| / \sqrt{n_i}$ to vary by a factor of $74$ across targets. This results in a small $1.3\%$ perturbation for dominant mutualists while forcing halo species into immediate extinction. Because the propagator on the halo block is dominated by single-node unit decay, this initial amplitude gradient accounts almost entirely for the measured geometry: $D_0(i,j)$ correlates with $D_{\text{Jac}}(i,j)$ at $\rho(D_{\text{Jac}}, D_0) = +0.990$. What naively appeared to be structured network propagation in the fixed-size protocol is $99\%$ an artifact of initial kick amplitude.
+
+\subsection{Empirical Confirmation via Replica Ensembles and Cluster Diagnostics}
+
+This amplitude artifact directly motivates an \textit{amplitude-matched protocol}:
+\begin{equation}
+\Delta n_i = -\operatorname{round}\sqrt{n_i}, \quad \text{clipped to } [1, n_i].
+\label{eq:matched}
+\end{equation}
+Because $\Delta n_i \propto \sqrt{n_i}$, the initial whitened kick magnitude is approximately equalized across all targets ($\|\mathbf{u}_i(0)\|_w \propto |\Delta n_i|/\sqrt{n_i} \approx 1$), compressing the kick spread from $74\times$ down to $2.7\times$. Crucially, this design eliminates the extinction of halo targets and completely decouples the amplitude baseline ($\rho(D_{\text{Jac}}, D_0) = 0.088$).
+
+To measure empirical perturbation cascades directly from the microscopic individual-based dynamics, we conduct an extensive ensemble of $5{,}220$ stochastic simulations branched from $t^* = \tstar$. For each of the $S^* = \Sstar$ target species, we execute $R = 60$ independent perturbed replicas, alongside $R = 60$ unperturbed \textit{sham} control replicas initialized from the identical microstate. For each replica $r \in [1, R]$ of target $i$, the relative frequency response of species $a$ across time is measured relative to its paired sham control:
+\begin{equation}
+\delta x_{a,(i)}^{(r)}(t) = x_{a,(i)}^{(r)}(t) - x_{a,\mathrm{sham}}^{(r)}(t), \quad \text{where } x_a(t) \equiv \frac{n_a(t)}{N(t)}.
+\label{eq:delta_x}
+\end{equation}
+Subtracting paired sham controls eliminates systematic demographic drift by construction. Averaging across the $R = 60$ replicas yields the mean empirical response cascade $\delta\mathbf{x}_{(i)}(t) = \frac{1}{R} \sum_{r=1}^R \delta\mathbf{x}_{(i)}^{(r)}(t)$. The \textit{empirical functional response distance} (or empirical Jacobian distance) $D(i,j)$ between species $i$ and $j$ is evaluated under the identical whitened norm over observation window $T = [1, 3]$:
+\begin{equation}
+\begin{split}
+D(i,j) &\equiv \frac{1}{|T|} \sum_{t \in T} \|\delta\mathbf{x}_{(i)}(t) - \delta\mathbf{x}_{(j)}(t)\|_w \\
+&= \frac{1}{|T|} \sum_{t \in T} \sqrt{ \sum_{a=1}^S \frac{\left( \delta x_{a,(i)}(t) - \delta x_{a,(j)}(t) \right)^2}{x_a^*} }.
+\end{split}
+\label{eq:D_emp}
+\end{equation}
+
+The fundamental distinction between the analytical community Jacobian distance $D_{\text{Jac}}(i,j)$ and the empirical functional response distance $D(i,j)$ lies in the physical nature of the underlying dynamics:
+\begin{itemize}
+    \item \textit{Analytical Community Jacobian Distance $D_{\mathrm{Jac}}(i,j)$}: An analytical mean-field construct derived from the first-order Taylor expansion of expected demographic rates about the fixed point ($\dot{\mathbf{u}} = K\mathbf{u}$, Eq.~\eqref{eq:D_jac}). It propagates deterministically via the matrix exponential $e^{Kt}$ in an idealized infinite-population limit, omitting Poisson demographic fluctuations, discrete individual integer effects, and non-linear saturation.
+    \item \textit{Empirical Functional Response Distance $D(i,j)$}: A physical observable measured from finite-population ($N^* = 1102$) Monte Carlo simulations (Eq.~\eqref{eq:D_emp}). It captures the full non-linear relaxation dynamics, discrete birth-death events, and finite-size demographic stochasticity.
+\end{itemize}
+Comparing $D(i,j)$ directly against $D_{\text{Jac}}(i,j)$ evaluates whether the linearized community Jacobian successfully explains empirical perturbation cascades, or whether finite-population demographic noise, timescale inversion, and kick amplitude disparities dominate the observed response space.
+
+\input{tab_reliability}
+
+Table~\ref{tab:reliability} summarizes the quantitative scorecard across both protocols, evaluating four complementary cluster and significance diagnostics to determine whether the ecosystem exhibits modular functional guilds outside the mutualistic core:
+\begin{enumerate}
+    \item \textit{Matrix Alignment and Amplitude Decoupling}: Under the fixed-size protocol, empirical simulated distances $D$ and analytical Jacobian distances $D_{\text{Jac}}$ correlate at $\rho(D, D_{\text{Jac}}) = \rhoHalo$. However, removing the decoupled amplitude baseline $D_0$ via partial rank correlation $\rho(D, D_{\text{Jac}} \mid D_0)$\footnotemark[2] collapses this agreement to $\rho = \rhoHaloPartial$ ($z = \zHaloPartial$ over the sham null). Under the amplitude-matched protocol, where amplitude variance is equalized, the raw correlation evaluates to $\rho(D, D_{\text{Jac}}) = \rhoMatched$ (partial correlation $\rho = \rhoMatchedPartial$, $z = \zMatchedPartial$), confirming that apparent empirical alignment under fixed shifts was driven by demographic amplitude disparities.
+    \item \textit{Ward Silhouette Score and Noise Null}: We test whether the empirical distance matrix partitions into discrete clusters using agglomerative hierarchical clustering with Ward's minimum-variance linkage. The silhouette score $s(i) = [b(i) - a(i)] / \max(a(i), b(i))$ evaluates whether species $i$ is more tightly bound to its assigned cluster (mean intra-cluster distance $a(i)$) than to the nearest neighboring cluster (mean inter-cluster distance $b(i)$), with the community average $s(k) \in [-1, 1]$ indicating strong modular clustering when $s > 0.50$ and lack of modular structure when $s < 0.25$. Under the amplitude-matched protocol, the empirical response yields $s(k=2) = \silMatched$. Benchmarked against 200 unperturbed sham noise draws (which capture the baseline of finite-population Poisson fluctuations), this corresponds to a standard score $z = (s - \mu_{\text{sham}}) / \sigma_{\text{sham}} = \silZMatched$. This negative $z$-score indicates that the measured response space is $4.5\sigma$ smoother and more continuous than Poisson demographic noise, ruling out discrete functional guilds outside the core.
+    \item \textit{Hopkins Cluster Tendency}\footnotemark[2]: The Hopkins statistic $H \in [0, 1]$ tests the spatial clustering tendency of a point set against a uniform Poisson spatial distribution ($H \approx 0.50$ indicates spatial randomness; $H \to 1.0$ indicates strong spatial clustering). The measured response yields $H = \hopMeasured$. However, benchmarking against label-permuted surrogates and an uncoupled ($J=0$) control reproduces the identical elevated value ($H \approx 0.88$, $z \le -0.60$), demonstrating that elevated $H$ is an intrinsic geometric artifact of the non-uniform density of points on the Boolean hypercube, rather than dynamical guild modularity.
+    \item \textit{Adjusted Rand Index (ARI)}\footnotemark[2]: To determine whether empirical response clusters align with analytical Jacobian predictions, we compute the Adjusted Rand Index (ARI) comparing the empirical Ward 4-cluster partition against the analytical Jacobian 4-cluster partition ($\text{ARI}=1$ denotes identical clusterings; $\text{ARI} \le 0$ denotes agreement no better than random chance). The index evaluates to $\text{ARI} = \ariMatched$, quantitatively confirming the complete absence of discrete modular boundaries outside the mutualistic core.
+\end{enumerate}
+\footnotetext[2]{See Supplementary Material.}
+
+\section{Punctuated Transition Dynamics in Jacobian Latent Space}
+\label{sec:transition}
+
+\subsection{Control Parameter and Saddle-Node Bifurcation}
+
+While the community Jacobian is degenerate during stationary qESS epochs, it becomes highly diagnostic when the ecosystem undergoes an evolutionary transition. To investigate how response geometry reorganizes during an actual punctuated reorganization, we analyze a long-lived simulation run ($\mu = 0.20$) where a transition connecting two long plateaus occurs at $t \in [3836, 3843]$. We record the complete microstate across all 51 generations in $t \in [3820, 3870]$, capturing 414 distinct genotypes.
+
+In classical dynamical systems, bifurcations are induced by externally tuned control parameters. In the Tangled Nature model, all macroscopic parameters ($C, \mu, p_{\text{mut}}, p_{\text{kill}}$) remain strictly constant. What drives the bifurcation is the \textit{state-dependent occupancy $n_{\text{inv}}(t)$ of an invading mutant genotype}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{r2_transition.pdf}
+\caption[Punctuated Transition in Latent Space]{\textbf{Microscopic Anatomy of a Punctuated Transition ($t \in [3820, 3870]$, $\mu = 0.20$).} 
+(a) Macroscopic total population $N(t)$ (black curve, left axis) and leading Jacobian real eigenvalue $\mathrm{Re}(\lambda_{\max})$ (orange curve, right axis). Shaded bands mark the four evolutionary phases: resident qESS (blue, $t \in [3820, 3835]$), invasion and crash (orange, $t \in [3836, 3839]$), reorganisation (yellow, $t \in [3840, 3843]$), and successor qESS (green, $t \in [3844, 3870]$). Crossing zero ($\mathrm{Re}(\lambda_{\max}): \lamRes \to \lamMax$) triggers immediate population collapse to $N = \Nmin$. 
+(b) Two-dimensional Classical MDS orbit of the abundance-weighted community centroid $\mathbf{X}_{\text{comm}}(t)$ across the transition, colored chronologically by generation. Colored circles mark the five key actors classified by type in the legend: ancestors (blue, resident dominants \texttt{615444} and \texttt{205879}), invader (orange, \texttt{594964}), bridge (yellow, transient stepping-stone \texttt{549908}), and successor (green, co-adapted partner \texttt{747028}). The dashed line segment connects the co-adapted successor mutualists (\texttt{594964} and \texttt{747028}); the centroid converges directly to their mutualistic center of mass ($\approx 60\%$ invader, $40\%$ partner) along this chord rather than to either single genotype in isolation. 
+(c) Genomic Hamming distance $D_H$ versus latent response distance for all extant pairs at the transition bottleneck. Evolutionary jumps between core genotypes are discrete ($D_H = 4 - 7$ bits), whereas centroid motion in response space traces a smooth relaxation path. 
+(d) Latent community dispersion $\Sigma(t)$ tracking geometric phase-space spreading. Comparing the unconstrained community dispersion (blue curve, peak ratio $\sigRatioAll\times$) against the fixed-membership control (orange dashed curve, peak ratio $\sigRatioFix\times$) proves that phase-space expansion is a genuine physical phenomenon rather than a taxonomic turnover artifact (the pre-invasion set goes extinct during the bottleneck transit).}
+\label{fig:transition}
+\end{figure*}
+
+Recomputing the exact community Jacobian at every generation (Fig.~\ref{fig:transition}(a)) reveals that during the quiet resident plateau, the system sits at $\mathrm{Re}(\lambda_{\max}) = \lamRes$. This eigenvalue reflects the density-independent death rate of non-reproducing types, while core modes are strongly stabilizing. For thousands of generations, random trial mutants enter with disadvantageous couplings ($H \ll H_{\text{crit}}$) and are rapidly pruned. Eventually, stochastic mutational exploration discovers an invader (genotype `594964`) with hostile couplings to resident dominant `615444` ($J = -371.87$). As its population builds to a critical threshold ($n_{\text{inv}} = 8$), the off-diagonal feedback in $K$ pushes the leading eigenvalue through zero:
+\begin{equation}
+\mathrm{Re}(\lambda_{\max}) = \lamRes \longrightarrow \lamMax > 0.
+\end{equation}
+This crossing marks a state-dependent \textit{saddle-node bifurcation}~\cite{cairoli2014forecasting}. Crucially, while the initiation of the transition is stochastic (requiring mutational diffusion to locate a destabilizing sequence), the subsequent macroscopic crash is \textit{deterministic relaxation along the unstable eigenmode manifold}: the resident core is crushed, community biomass collapses to its bottleneck minimum $N = \Nmin$, and the ecosystem reorganizes into a new stable attractor.
+
+\subsection{Genotypic Discreteness vs. Latent Response Continuity}
+
+Figure~\ref{fig:transition}(b) displays the abundance-weighted community centroid $\mathbf{X}_{\text{comm}}(t) = \sum_a x_a(t) \mathbf{y}_a$ in the two leading MDS coordinates of the response manifold, constructed at the bottleneck generation where all five principal actors coexist. A striking duality emerges between sequence space and response space (Fig.~\ref{fig:transition}(c)):
+\begin{itemize}
+    \item \textit{In genotype space}: Evolution is discrete. Ancestral core `615444` and successor dominant `594964` are separated by a Hamming jump of $D_H = 4$ bits; resident `205879` and successor partner `747028` are separated by $D_H = 7$ bits. Trajectories traverse empty, unpopulated sequence nodes.
+    \item \textit{In response space}: The centroid trajectory traces a continuous path connecting the ancestral and successor basins. Because population abundances change continuously by discrete birth-death events, the macroscopic trajectory relaxes smoothly through the saddle region.
+\end{itemize}
+Crucially, the successor equilibrium is not a monoculture of genotype `747028`, but an obligate mutualistic pair formed by `594964` (invader, carrying $\approx 60\%$ of core biomass) and `747028` (successor partner, $\approx 40\%$). Consequently, the centroid does not converge to the successor node alone, but stabilizes directly along the chord connecting the two mutualists (dashed line in Fig.~\ref{fig:transition}(b)), where it remains locked for the duration of the successor plateau.
+
+\subsection{Separating Phase-Space Dispersion from Taxonomic Turnover}
+
+To quantify the geometric spreading of the community in response space, we apply Classical Multidimensional Scaling (MDS) to the time-averaged response distance matrix $D(i,j)$, embedding each genotype into a Euclidean coordinate $\mathbf{y}_a \in \mathbb{R}^d$. Following the latent geometry framework of perturbation dynamics~\cite{barzon2024unraveling}, we define the abundance-weighted community centroid as $\mathbf{X}_{\text{comm}}(t) = \sum_{a=1}^S x_a(t) \mathbf{y}_a$, and the root-mean-square latent community dispersion as:
+\begin{equation}
+\Sigma(t) = \sqrt{\sum_{a=1}^S x_a(t) \|\mathbf{y}_a - \mathbf{X}_{\text{comm}}(t)\|^2}.
+\label{eq:dispersion}
+\end{equation}
+In Eq.~\eqref{eq:dispersion}, $x_a(t) = n_a(t) / N(t)$ is the instantaneous relative frequency of genotype $a$, and $\|\mathbf{y}_a - \mathbf{X}_{\text{comm}}(t)\|$ measures the Euclidean distance of genotype $a$ from the community center of mass in latent response space. The metric $\Sigma(t)$ thus measures the effective geometric radius of the community in perturbation response space.
+
+A key physical question is whether the geometric spreading observed during the transition represents genuine dynamical delocalization or merely an artifact of taxonomic turnover. During the collapse, unconstrained community dispersion surges by a factor of $\sigRatioAll\times$ (Fig.~\ref{fig:transition}(d), blue curve). However, because an evolutionary transition involves extensive species turnover (ancestral core mutualists go extinct and are replaced by novel mutant lineages), a naive dispersion measurement could expand simply because newly appearing species happen to occupy distant coordinates in sequence space.
+
+To resolve this ambiguity, we introduce a \textit{fixed-membership control}: we evaluate $\Sigma(t)$ restricted strictly to the invariant subset of resident genotypes that survive throughout the transition window. As shown by the orange dashed curve in Fig.~\ref{fig:transition}(d), the dispersion of this fixed resident subset still surges by a factor of $\sigRatioFix\times$. This rigorous control establishes that existing resident lineages physically delocalize and fragment across the unstable eigenmode manifold prior to extinction, proving that phase-space expansion is a genuine non-equilibrium dynamical flow rather than a taxonomic turnover artifact.
+
+\section{Discussion and Conclusions}
+\label{sec:discussion}
+
+Our exploration of the perturbation-response geometry of the Tangled Nature model gives several conclusions for complex network dynamics and evolutionary statistical physics:
+
+\paragraph{Structural Constraint of the Survival Line.} In the Tangled Nature model, response geometry at stationarity is primarily determined by the global carrying capacity threshold Eq.~\eqref{eq:line}. Because the interaction matrix is unbiased, achieving autonomous reproduction requires mutualistic cliques whose joint probability decays exponentially, strictly limiting the core to $2 - 4$ species. All remaining species form a passive mutational halo whose abundances are predicted with zero free parameters by mutational leakage from the core ($\rho = \haloRho$, ratio $\haloRatio$).
+
+\paragraph{The Role of Timescale Inversion and Perturbation Amplitude.} The intuitive picture of low-dimensional center-manifold slaving fails dynamically because timescale ordering is inverted: core mutualists equilibrate rapidly ($|\lambda| \sim 26 - 105$) while halo mutants decay slowly ($\lambda = -1.0$). Consequently, non-core responses are dominated by self-decay rather than core projections. Standard fixed-size perturbation protocols introduce an overwhelming amplitude gradient that can be mistaken for network-mediated functional similarity. Incorporating decoupled baselines ($D_0$) and amplitude-matched protocols provides an essential safeguard for perturbation-response experiments.
+
+\paragraph{Physical Anatomy of Punctuated Transitions.} Across evolutionary transitions, the community Jacobian serves as a powerful dynamical diagnostic. Stochastic mutational drift acts as an internal state-dependent control parameter, triggering a linear bifurcation that funnels the ecosystem along deterministic unstable eigenmodes. Fixed-membership controls demonstrate that phase-space delocalization is a genuine physical consequence of instability rather than a turnover artifact.
+
+In conclusion, perturbation-response geometry offers deep mathematical and physical insights into the non-equilibrium organization of coevolving networks. Future extensions incorporating structured multi-resource niches, sub-generational sampling, and non-zero abiotic landscapes ($\sigma > 0$) will further illuminate how modularity and continuous response manifolds partition in complex living systems.
+
+\begin{acknowledgments}
+This work was conducted as part of the course \emph{Physics of Complex Networks: Structure and Dynamics} (Master's Degree in Physics of Data / Physics, University of Padua).
+
+Source code and data are available in the \href{https://github.com/filippobezzi/PoCN_projects}{repository}. 
+
+The author acknowledges the use of generative artificial intelligence assistance (DeepMind's Antigravity AI assistant) for writing assistance, code development, data formatting, and proofreading the manuscript. Some analytical derivations, mathematical proofs, numerical simulations, and physical interpretations still need rigorous verification by the author.
+
+\end{acknowledgments}
+
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\caption{\label{tab:reliability}\textbf{Empirical Response Matrix Reliability and Cluster Diagnostics Across Perturbation Protocols.}
+Spearman rank correlations over the $\binom{86}{2}=3655$ unique species pairs, comparing the empirical response distance matrix $D(i,j)$ (measured across $5{,}220$ stochastic replica simulations, $R=60$ replicas per target) against the theoretical Jacobian distance matrix $D_{\rm Jac}(i,j)$ (derived from the analytical linear propagator $e^{Kt}$), before and after removing the uncoupled single-node amplitude baseline $D_0(i,j)$.
+Here, $D$ is the empirical distance matrix measured from simulated demographic frequency trajectories, whereas $D_{\rm Jac}$ is the deterministic prediction derived from the community Jacobian.
+Null distributions (means and standard deviations) are computed from 200 bootstrap sham noise draws constructed from unperturbed replica ensembles; $z$ denotes the standard score over this demographic noise null.
+Cluster diagnostics include the Ward hierarchical silhouette score $s(k=2)$, the Hopkins cluster tendency statistic $H$, and the Adjusted Rand Index (ARI) comparing empirical and analytical 4-cluster partitions.
+Both protocols achieve the identical median signal-to-noise ratio ($\mathrm{SNR} \approx 1.35$), confirming that differences reflect perturbation geometry rather than statistical power.}
+\begin{ruledtabular}
+\begin{tabular}{lcc}
+ & Fixed-size protocol & Amplitude-matched \\
+ & $\Delta n_i=-\min(n_i,5)$ & $\Delta n_i=-\mathrm{round}\sqrt{n_i}$ \\ \hline
+Whitened kick amplitude spread & $74\times$ & $2.7\times$ \\
+Forced target extinctions & 77/86 & 34/86 \\ \hline
+$\rho(D,D_{\rm Jac})$ (Empirical simulated $D$ vs. Analytical Jacobian $D_{\rm Jac}$) & $+0.495$ & $-0.002$ \\
+$\rho(D,D_{\rm Jac} \mid D_0)$ (Partial correlation removing amplitude baseline $D_0$) & $+0.067$ & $+0.006$ \\
+\quad Sham null mean $\pm$ s.d. & $+0.004\pm0.031$ & $+0.004\pm0.038$ \\
+\quad $z$-score over sham null & $+2.07$ & $+0.06$ \\ \hline
+$\rho(D,D_0)$ (Correlation with uncoupled amplitude baseline $D_0$) & $+0.491$ & $-0.006$ \\
+$\rho(D,D_{\rm Jac})$, interactions deleted ($J=0$ null model) & $+0.088$ & $+0.007$ \\ \hline
+$\rho(D,D_H)$ (Correlation with genomic Hamming distance) & $-0.083$ & $+0.028$ \\
+$\rho(D,D_{\rm int})$ (Correlation with direct interaction profile) & $+0.031$ & $+0.031$ \\ \hline
+Ward silhouette score $s(k{=}2)$ & $+0.017$ & $+0.016$ \\
+\quad $z$-score vs. sham noise null & $-4.45$ & $-4.48$ \\
+Hopkins cluster tendency $H$ & $0.624$ & $0.651$ \\
+Adjusted Rand Index (ARI) with Jacobian manifold ($k=4$) & $+0.021$ & $-0.018$ \\
+\end{tabular}
+\end{ruledtabular}
+\end{table*}

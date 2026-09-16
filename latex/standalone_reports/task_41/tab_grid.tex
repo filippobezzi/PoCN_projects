@@ -1,0 +1,29 @@
+\begin{table*}
+\caption{\label{tab:grid}Operating points examined, and the geometry of the
+Jacobian manifold constructed at each.  $S_{\rm core}$ counts types with
+$p_{\rm off}>p_{\rm kill}$, i.e.\ those able to reproduce without mutational
+influx.  $d_{\rm eff}$ is the participation ratio of the singular values of $K$.
+$H$ is the Hopkins statistic of the manifold, averaged over 25 sampling draws;
+$s_{\max}$ the best Ward silhouette over $k\in[2,4]$.  Each is quoted beside the
+mean of a label-permuted surrogate and the corresponding $z$.  All runs use
+$\nu=5\times10^{-6}$, $p_{\rm kill}=0.2$, $\sigma=0$, world seed 1234.
+These are twelve single realisations, not an ensemble over landscapes.}
+\begin{ruledtabular}
+\begin{tabular}{lccc ccccc cc c cc c}
+Regime & $C$ & $p_{\rm mut}$ & $\mu$ & $N$ & $S$ & $S_{\rm core}$ & core \% &
+$d_{\rm eff}$ & $H$ & null & $z$ & $s_{\max}$ & null & $z$ \\ \hline
+\texttt{baseline} & 100 & 0.010 & 0.10 & 868 & 53 & 2 & 82.1 & 1.37 & 0.878 & 0.898 & -0.88 & 0.119 & 0.514 & -0.97 \\
+\texttt{C\_50} & 50 & 0.010 & 0.10 & 366 & 45 & 3 & 81.1 & 2.62 & 0.837 & 0.886 & -1.91 & 0.190 & 0.554 & -0.87 \\
+\texttt{C\_200} & 200 & 0.010 & 0.10 & 1128 & 87 & 4 & 81.1 & 2.19 & 0.814 & 0.917 & -2.81 & 0.108 & 0.649 & -1.31 \\
+\texttt{C\_300} & 300 & 0.010 & 0.10 & 3035 & 121 & 4 & 82.0 & 1.23 & 0.883 & 0.897 & -0.45 & 0.088 & 0.277 & -0.52 \\
+\texttt{pmut\_0002} & 100 & 0.002 & 0.10 & 183 & 8 & 3 & 97.3 & 1.65 & \multicolumn{6}{c}{$S<10$: geometry not defined} \\
+\texttt{pmut\_0005} & 100 & 0.005 & 0.10 & 1330 & 45 & 2 & 90.8 & 1.40 & 0.851 & 0.871 & -0.48 & 0.117 & 0.489 & -0.87 \\
+\texttt{pmut\_002} & 100 & 0.020 & 0.10 & 588 & 99 & 7 & 66.8 & 2.92 & 0.865 & 0.921 & -1.75 & 0.094 & 0.447 & -0.83 \\
+\texttt{mu\_005} & 100 & 0.010 & 0.05 & 1459 & 98 & 4 & 82.9 & 2.09 & 0.839 & 0.916 & -2.27 & 0.163 & 0.487 & -0.74 \\
+\texttt{mu\_02} & 100 & 0.010 & 0.20 & 474 & 45 & 2 & 81.6 & 1.26 & 0.881 & 0.899 & -0.86 & 0.120 & 0.387 & -0.68 \\
+\texttt{pmut\_002\_C\_200} & 200 & 0.020 & 0.10 & 1813 & 186 & 4 & 66.5 & 1.86 & 0.901 & 0.959 & -4.42 & 0.048 & 0.377 & -0.78 \\
+\texttt{C\_200\_pmut\_0005} & 200 & 0.005 & 0.10 & 941 & 44 & 2 & 90.9 & 1.50 & 0.857 & 0.876 & -0.70 & 0.131 & 0.640 & -1.38 \\
+\texttt{C\_200\_mu\_005} & 200 & 0.010 & 0.05 & 1656 & 104 & 4 & 82.9 & 2.33 & 0.888 & 0.933 & -1.50 & 0.325 & 0.657 & -0.81 \\
+\end{tabular}
+\end{ruledtabular}
+\end{table*}

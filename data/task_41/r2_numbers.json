@@ -1,0 +1,16 @@
+{
+  "halo_balance_rho": 0.6922945963860511,
+  "halo_balance_median_ratio": 1.0556907133770594,
+  "rank90_predicted": 71,
+  "rank90_measured": 62,
+  "core_direction_fraction_median": 0.04176531406588521,
+  "rho_DJac_hamming": 0.03956448354694574,
+  "transition_lambda_max": 3.0895406188397248,
+  "transition_lambda_resident": -0.9999999999999922,
+  "transition_N_min": 277.0,
+  "transition_reference_generation": 3839,
+  "sigma_peak_all": 11.466369951527962,
+  "sigma_peak_fixed": 7.731603125297064,
+  "sigma_base_all": 1.6114133748399206,
+  "sigma_base_fixed": 1.6114133748399206
+}
